@@ -1,0 +1,45 @@
+# k8s/api-deployment.yml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: portfolio-api-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: portfolio-api
+  template:
+    metadata:
+      labels:
+        app: portfolio-api
+    spec:
+      containers:
+        - name: portfolio-api
+          image: aayzstha37/portfolio-api:latest # Your image name
+          imagePullPolicy: Never # Use local images, don't pull from internet
+          ports:
+            - containerPort: 8080
+          env:
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://portfolio-db-service:5432/portfolio" # Connect to the K8s service
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "myuser"
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom: # Get password from the K8s secret
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: "update"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: portfolio-api-service # The name our UI will use to connect
+spec:
+  selector:
+    app: portfolio-api
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
