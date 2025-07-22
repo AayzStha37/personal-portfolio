@@ -1,0 +1,73 @@
+# k8s/database.yml
+# This file defines everything needed to run PostgreSQL inside Kubernetes
+
+# 1. The Persistent Volume Claim: Our request for disk space that survives restarts.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: postgres-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce # Can be mounted by one node at a time
+  resources:
+    requests:
+      storage: 1Gi # Request 1 Gigabyte of storage
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: portfolio-db-service # The DNS name will be 'portfolio-db-service'
+spec:
+  selector:
+    app: postgres
+  ports:
+    - protocol: TCP
+      port: 5432
+      targetPort: 5432
+
+---
+# 3. The StatefulSet: Manages our PostgreSQL pod.
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: postgres-statefulset
+spec:
+  serviceName: "portfolio-db-service"
+  replicas: 1
+  selector:
+    matchLabels:
+      app: postgres
+  template:
+    metadata:
+      labels:
+        app: postgres
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:15-alpine # Use the official postgres image
+          ports:
+            - containerPort: 5432
+          env:
+            - name: POSTGRES_DB
+              value: "portfolio"
+            - name: POSTGRES_USER
+              value: "myuser"
+            - name: PGDATA # Tells postgres where to store its data
+              value: /var/lib/postgresql/data/pgdata
+            - name: POSTGRES_PASSWORD # Pull the password from our K8s Secret
+              valueFrom:
+                secretKeyRef:
+                  name: postgres-secret
+                  key: POSTGRES_PASSWORD
+          volumeMounts:
+            - name: postgres-storage
+              mountPath: /var/lib/postgresql/data # Mount the persistent disk here
+  volumeClaimTemplates: # This links the StatefulSet to the PVC
+    - metadata:
+        name: postgres-storage
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: 1Gi
