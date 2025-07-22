@@ -1,35 +1,36 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
+
+import { useEffect, useState } from 'react';
+// The corrected code
+import { getProjects } from './services/apiService';        // This imports the 'value' (the function)
+import type { Project } from './services/apiService'; // This imports the 'type' (the interface)
+import { ProjectCard } from './components/ProjectCard';
+import './App.css';
 
 function App() {
-  const [count, setCount] = useState(0)
+    const [projects, setProjects] = useState<Project[]>([]);
+    const [error, setError] = useState<string | null>(null);
 
-  return (
-    <>
-      <div>
-        <a href="https://vite.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </>
-  )
+    useEffect(() => {
+        getProjects()
+            .then(data => setProjects(data))
+            .catch(err => {
+                console.error("Failed to fetch projects:", err);
+                setError("Could not load projects. Is the backend server running?");
+            });
+    }, []);
+
+    return (
+        <>
+            <h1>My Professional Portfolio</h1>
+            <p>Welcome! Here are some of my projects.</p>
+            <div className="project-grid">
+                {error && <p className="error">{error}</p>}
+                {projects.map(project => (
+                    <ProjectCard key={project.id} project={project} />
+                ))}
+            </div>
+        </>
+    );
 }
 
-export default App
+export default App;

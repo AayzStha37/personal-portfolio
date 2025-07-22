@@ -1,0 +1,13 @@
+/* File: ui/src/components/ProjectCard.css */
+.card {
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px;
+    width: 300px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    text-align: left;
+}
+.card-image { width: 100%; border-radius: 4px; }
+.card-links { margin-top: 12px; }
+.card-links a { margin-right: 12px; text-decoration: none; color: #007bff; }
