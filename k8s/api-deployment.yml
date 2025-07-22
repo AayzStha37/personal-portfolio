@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: portfolio-api
-          image: aayzstha37/portfolio-api:latest # Your image name
-          imagePullPolicy: Never # Use local images, don't pull from internet
+          image: ghcr.io/aayzstha37/personal-portfolio/api:latest 
+          imagePullPolicy: Always 
           ports:
             - containerPort: 8080
           env:

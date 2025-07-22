@@ -15,8 +15,8 @@ spec:
     spec:
       containers:
         - name: portfolio-ui
-          image: aayzstha37/portfolio-ui:latest # Your image name
-          imagePullPolicy: Never # Use local images
+          image: ghcr.io/aayzstha37/personal-portfolio/ui:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
 ---
