@@ -1,0 +1,18 @@
+# File: k8s/kustomization.yaml (Corrected)
+
+# This file tells Kustomize how to build the final set of Kubernetes manifests.
+
+# 1. Include the entire Nginx Ingress Controller manifest from its URL.
+resources:
+  - https://raw.githubusercontent.com/kubernetes/ingress-nginx/main/deploy/static/provider/cloud/deploy.yaml
+  # 2. Include all of our application's YAML files from the 'base' directory explicitly.
+  - ./base/api-deployment.yml
+  - ./base/database.yml
+  - ./base/ingress-service.yml
+  - ./base/ui-deployment.yml
+
+# 3. Declaratively generate our secret.
+secretGenerator:
+- name: postgres-secret
+  literals:
+  - POSTGRES_PASSWORD=mypassword
