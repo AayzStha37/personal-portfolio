@@ -1,8 +1,7 @@
-# File: .github/workflows/build-and-push.yml (Final Version)
+# File: .github/workflows/build-and-push.yml (Corrected for Lowercase)
 
 name: Build and Push Docker Images on Merge to Main
 
-# This workflow runs only when a pull request targeting the 'main' branch is closed.
 on:
   pull_request:
     types: [ closed ]
@@ -10,13 +9,11 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  IMAGE_NAME: ${{ github.repository }}
+  # REMOVED an IMAGE_NAME from here, as we will create a sanitized one in the job.
 
 jobs:
   build-and-push:
-    # This condition ensures the job only runs if the pull request was merged.
     if: github.event.pull_request.merged == true
-    
     runs-on: ubuntu-latest
     permissions:
       contents: read
@@ -24,8 +21,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        # This checks out the code from the 'main' branch after the merge has completed.
         uses: actions/checkout@v4
+
+      # --- NEW STEP ADDED HERE ---
+      # This step takes the GitHub repository variable (e.g., "AayzStha37/personal-portfolio"),
+      # converts it to all lowercase, and saves it to a new environment variable named IMAGE_NAME.
+      - name: Sanitize repository name for Docker tag
+        run: echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Log in to the GitHub Container Registry
         uses: docker/login-action@v3
@@ -43,6 +45,8 @@ jobs:
           context: ./api
           file: ./api/Dockerfile
           push: true
+          # --- UPDATED THIS LINE ---
+          # Use the new, sanitized, lowercase IMAGE_NAME variable.
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api:latest
 
       - name: Build and push portfolio-ui image
@@ -51,4 +55,5 @@ jobs:
           context: ./ui
           file: ./ui/Dockerfile
           push: true
+          # --- UPDATED THIS LINE ---
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/ui:latest
