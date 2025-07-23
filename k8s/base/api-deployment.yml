@@ -13,6 +13,8 @@ spec:
       labels:
         app: portfolio-api
     spec:
+      imagePullSecrets: 
+        - name: ghcr-secret
       containers:
         - name: portfolio-api
           image: ghcr.io/aayzstha37/personal-portfolio/api:latest 

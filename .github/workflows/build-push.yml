@@ -1,6 +1,6 @@
-# File: .github/workflows/build-and-push.yml (Corrected for Lowercase)
+# File: .github/workflows/build-and-push.yml (Final with Auto-Deploy)
 
-name: Build and Push Docker Images on Merge to Main
+name: Build, Push, and Deploy to GKE
 
 on:
   pull_request:
@@ -9,7 +9,6 @@ on:
 
 env:
   REGISTRY: ghcr.io
-  # REMOVED an IMAGE_NAME from here, as we will create a sanitized one in the job.
 
 jobs:
   build-and-push:
@@ -18,15 +17,15 @@ jobs:
     permissions:
       contents: read
       packages: write
+    outputs:
+      image_name: ${{ steps.sanitize.outputs.IMAGE_NAME }}
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # --- NEW STEP ADDED HERE ---
-      # This step takes the GitHub repository variable (e.g., "AayzStha37/personal-portfolio"),
-      # converts it to all lowercase, and saves it to a new environment variable named IMAGE_NAME.
       - name: Sanitize repository name for Docker tag
+        id: sanitize # Give this step an ID to reference its output
         run: echo "IMAGE_NAME=$(echo ${{ github.repository }} | tr '[:upper:]' '[:lower:]')" >> $GITHUB_ENV
 
       - name: Log in to the GitHub Container Registry
@@ -43,17 +42,43 @@ jobs:
         uses: docker/build-push-action@v5
         with:
           context: ./api
-          file: ./api/Dockerfile
           push: true
-          # --- UPDATED THIS LINE ---
-          # Use the new, sanitized, lowercase IMAGE_NAME variable.
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/api:latest
 
       - name: Build and push portfolio-ui image
         uses: docker/build-push-action@v5
         with:
           context: ./ui
-          file: ./ui/Dockerfile
           push: true
-          # --- UPDATED THIS LINE ---
           tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}/ui:latest
+
+  deploy:
+    # This job will only run if the 'build-and-push' job succeeds
+    needs: build-and-push
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write # Required for keyless authentication
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (keyless)
+        id: auth
+        uses: 'google-github-actions/auth@v2'
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WIF_PROVIDER }}
+          service_account: ${{ secrets.GCP_SA_EMAIL }}
+
+      - name: Get GKE cluster credentials
+        uses: 'google-github-actions/get-gke-credentials@v2'
+        with:
+          cluster_name: portfolio-cluster
+          location: us-central1-c # Use the same zone you created the cluster in
+
+      - name: Deploy application to GKE
+        run: |
+          echo "Deploying new version to GKE cluster..."
+          # The -k flag uses our Kustomize configuration to deploy everything
+          kubectl apply -k k8s/
