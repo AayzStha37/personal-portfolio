@@ -1,36 +1,27 @@
+import { Toaster } from "@/components/ui/toaster";
+import { Toaster as Sonner } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Index from "./pages/Index";
+import NotFound from "./pages/NotFound";
 
-import { useEffect, useState } from 'react';
-// The corrected code
-import { getProjects } from './services/apiService';        // This imports the 'value' (the function)
-import type { Project } from './services/apiService'; // This imports the 'type' (the interface)
-import { ProjectCard } from './components/ProjectCard';
-import './App.css';
+const queryClient = new QueryClient();
 
-function App() {
-    const [projects, setProjects] = useState<Project[]>([]);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        getProjects()
-            .then(data => setProjects(data))
-            .catch(err => {
-                console.error("Failed to fetch projects:", err);
-                setError("Could not load projects. Is the backend server running?");
-            });
-    }, []);
-
-    return (
-        <>
-            <h1>My Professional Portfolio</h1>
-            <p>Welcome! Here are some of my projects.</p>
-            <div className="project-grid">
-                {error && <p className="error">{error}</p>}
-                {projects.map(project => (
-                    <ProjectCard key={project.id} project={project} />
-                ))}
-            </div>
-        </>
-    );
-}
+const App = () => (
+  <QueryClientProvider client={queryClient}>
+    <TooltipProvider>
+      <Toaster />
+      <Sonner />
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<Index />} />
+          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </BrowserRouter>
+    </TooltipProvider>
+  </QueryClientProvider>
+);
 
 export default App;

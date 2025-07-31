@@ -1,0 +1,51 @@
+/* The container for the spaceships. It acts as the "stage" for the animation. */
+.spaceship-container {
+  /* Position it to fill the entire screen and stay in the background */
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  /* Hide spaceships that fly outside the screen to prevent scrollbars */
+  overflow: hidden;
+  /* Ensure it's behind all other content */
+  z-index: -1;
+}
+
+/* Define the animation that moves an element from left to right */
+@keyframes fly-across {
+  from {
+    /* Start just off the left side of the screen */
+    transform: translateX(-150px);
+  }
+  to {
+    /* End just off the right side of the screen */
+    transform: translateX(100vw);
+  }
+}
+
+/* Base styles for every spaceship */
+.spaceship {
+  position: absolute;
+  font-size: 2rem; /* You can adjust the size */
+  
+  /* Apply the animation here */
+  animation-name: fly-across;
+  animation-timing-function: linear; /* Constant speed during flight */
+  animation-iteration-count: infinite; /* Loop forever */
+}
+
+/* Use the classes from your React component to set different speeds */
+.spaceship-slow {
+  animation-duration: 25s;
+  opacity: 0.7; /* Slower ships can be more in the "background" */
+}
+
+.spaceship-medium {
+  animation-duration: 15s;
+}
+
+.spaceship-fast {
+  animation-duration: 8s;
+  font-size: 2.2rem; /* Faster ships can appear closer/bigger */
+}
