@@ -227,147 +227,211 @@ const SnakeGame = ({ isMobile = false }: SnakeGameProps) => {
   const latestSkill = collectedSkills[collectedSkills.length - 1];
 
   return (
-    <div className="flex flex-col lg:flex-row gap-6 p-4">
-      {/* Skills List */}
-      <div className="lg:w-64">
-        <div className="game-ui p-4">
-          <h3 className="font-arcade text-lg text-primary mb-4 text-center">SKILL TREE</h3>
-          <div className="space-y-2 max-h-80 overflow-y-auto no-scrollbar">
-            {mySkills.map((skill, index) => (
-              <div 
-                key={index}
-                className={`flex items-center gap-3 p-2 rounded border transition-all ${
-                  collectedSkills.some(s => s.name === skill.name)
-                    ? 'bg-primary/20 border-primary text-primary'
-                    : 'bg-card border-border text-muted-foreground'
-                }`}
-              >
-                <span className="text-lg">{skill.icon}</span>
-                <span className="font-mono text-xs">{skill.name}</span>
-              </div>
-            ))}
-          </div>
-        </div>
-      </div>
-
-      {/* Game Board */}
-      <div className="flex-1">
-        <div className="text-center mb-4">
-          <h2 className="font-arcade text-xl text-primary mb-2 text-center">SKILLS GAME</h2>
-          <div className="flex justify-center gap-4 font-mono text-sm">
-            <span>Score: <span className="text-secondary">{score}</span></span>
-            <span>Skills: <span className="text-secondary">{collectedSkills.length}</span></span>
-          </div>
-          {!isGameStarted && !isGameOver && (
-            <button
-              onClick={startGame}
-              className="arcade-button px-6 py-3 font-arcade text-sm mt-2 text-white"
-            >
-              START GAME
-            </button>
-          )}
-        </div>
-
-        <div 
-          ref={gameAreaRef}
-          className="snake-game mx-auto relative"
-          style={{
-            width: `${GRID_SIZE * 20}px`,
-            height: `${GRID_SIZE * 20}px`,
-            display: 'grid',
-            gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
-            gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`,
-            gap: '1px'
-          }}
+    <div className="flex flex-col gap-6 p-4 w-full">
+      {/* Main Game Layout */}
+      <div className="flex flex-col lg:flex-row justify-center items-stretch gap-6 w-full">
+        {/* Skill Tree */}
+        <div
+          className="lg:w-64 w-64"
+          style={{ minWidth: 200, maxWidth: 320 }}
         >
-          {/* Snake segments */}
-          {snake.map((segment, index) => (
-            <div
-              key={index}
-              className="snake-segment"
-              style={{
-                gridColumn: segment.x + 1,
-                gridRow: segment.y + 1,
-                backgroundColor: index === 0 ? 'hsl(var(--primary))' : 'hsl(var(--secondary))'
-              }}
-            />
-          ))}
-          
-          {/* Food */}
           <div
-            className="snake-food flex items-center justify-center text-lg"
+            className="game-ui p-4 h-full flex flex-col"
             style={{
-              gridColumn: food.x + 1,
-              gridRow: food.y + 1
+              height: `calc(${GRID_SIZE * 20}px)`,
+              minHeight: 320,
+              maxHeight: `calc(${GRID_SIZE * 20}px)`,
             }}
           >
-            {currentSkill.icon}
+            <h3 className="font-arcade text-lg text-primary mb-4 text-center">SKILL TREE</h3>
+            <div className="space-y-2 flex-1 overflow-y-auto no-scrollbar">
+              {mySkills.map((skill, index) => (
+                <div
+                  key={index}
+                  className={`flex items-center gap-3 p-2 rounded border transition-all ${
+                    collectedSkills.some(s => s.name === skill.name)
+                      ? 'bg-primary/20 border-primary text-primary'
+                      : 'bg-card border-border text-muted-foreground'
+                  }`}
+                >
+                  <span className="text-lg">{skill.icon}</span>
+                  <span className="font-mono text-xs">{skill.name}</span>
+                </div>
+              ))}
+            </div>
           </div>
+        </div>
 
-          {/* Game Over Overlay */}
-          {isGameOver && (
-            <div className="absolute inset-0 bg-background/90 flex flex-col items-center justify-center">
-              <h3 className="font-arcade text-2xl text-primary mb-4 text-center">GAME OVER</h3>
+        {/* Game Board */}
+        <div
+          className="flex-1 flex flex-col items-center justify-center min-w-[320px]"
+          style={{
+            minWidth: 320,
+            maxWidth: 480,
+          }}
+        >
+          <div className="text-center mb-4">
+            <h2 className="font-arcade text-xl text-primary mb-2 text-center">SKILLS GAME</h2>
+            <div className="flex justify-center gap-4 font-mono text-sm">
+              <span>Score: <span className="text-secondary">{score}</span></span>
+              <span>Skills: <span className="text-secondary">{collectedSkills.length}</span></span>
+            </div>
+            {!isGameStarted && !isGameOver && (
               <button
-                onClick={resetGame}
-                className="arcade-button px-6 py-3 font-arcade text-sm text-white"
+                onClick={startGame}
+                className="arcade-button px-6 py-3 font-arcade text-sm mt-2 text-white"
               >
-                PLAY AGAIN
+                START GAME
               </button>
-            </div>
-          )}
-
-          {/* Pause Overlay */}
-          {isPaused && !isGameOver && isGameStarted && (
-            <div className="absolute inset-0 bg-background/90 flex items-center justify-center">
-              <h3 className="font-arcade text-xl text-secondary text-center">PAUSED</h3>
-            </div>
-          )}
-
-          {/* Game Not Started Overlay */}
-          {!isGameStarted && !isGameOver && (
-            <div className="absolute inset-0 bg-background/90 flex items-center justify-center">
-              <h3 className="font-arcade text-sm text-secondary text-center">PRESS START TO BEGIN</h3>
-            </div>
-          )}
-        </div>
-
-        {/* Controls */}
-        <div className="text-center mt-4 font-mono text-xs text-muted-foreground">
-          {isMobile ? 'Use the D-pad controls' : 'Use WASD or Arrow keys to move, SPACE to pause'}
-        </div>
-
-        {/* Mobile Controls */}
-        {isMobile && (
-          <div className="mobile-controls">
-            <div></div>
-            <button className="mobile-btn" onClick={() => handleMobileControl('UP')}>
-              ↑
-            </button>
-            <div></div>
-            <button className="mobile-btn" onClick={() => handleMobileControl('LEFT')}>
-              ←
-            </button>
-            <button className="mobile-btn" onClick={() => setIsPaused(!isPaused)}>
-              ⏸
-            </button>
-            <button className="mobile-btn" onClick={() => handleMobileControl('RIGHT')}>
-              →
-            </button>
-            <div></div>
-            <button className="mobile-btn" onClick={() => handleMobileControl('DOWN')}>
-              ↓
-            </button>
-            <div></div>
+            )}
           </div>
-        )}
+
+          <div
+            ref={gameAreaRef}
+            className="snake-game mx-auto relative"
+            style={{
+              width: `${GRID_SIZE * 20}px`,
+              height: `${GRID_SIZE * 20}px`,
+              display: 'grid',
+              gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
+              gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`,
+              gap: '1px',
+              background: 'var(--card)',
+              borderRadius: 8,
+              boxShadow: '0 2px 8px 0 rgba(0,0,0,0.08)',
+              position: 'relative',
+            }}
+          >
+            {/* Snake segments */}
+            {snake.map((segment, index) => (
+              <div
+                key={index}
+                className="snake-segment"
+                style={{
+                  gridColumn: segment.x + 1,
+                  gridRow: segment.y + 1,
+                  backgroundColor: index === 0 ? 'hsl(var(--primary))' : 'hsl(var(--secondary))'
+                }}
+              />
+            ))}
+
+            {/* Food */}
+            <div
+              className="snake-food flex items-center justify-center text-lg"
+              style={{
+                gridColumn: food.x + 1,
+                gridRow: food.y + 1
+              }}
+            >
+              {currentSkill.icon}
+            </div>
+
+            {/* Game Over Overlay */}
+            {isGameOver && (
+              <div className="absolute inset-0 bg-background/90 flex flex-col items-center justify-center">
+                <h3 className="font-arcade text-2xl text-primary mb-4 text-center">GAME OVER</h3>
+                <button
+                  onClick={resetGame}
+                  className="arcade-button px-6 py-3 font-arcade text-sm text-white"
+                >
+                  PLAY AGAIN
+                </button>
+              </div>
+            )}
+
+            {/* Pause Overlay */}
+            {isPaused && !isGameOver && isGameStarted && (
+              <div className="absolute inset-0 bg-background/90 flex items-center justify-center">
+                <h3 className="font-arcade text-xl text-secondary text-center">PAUSED</h3>
+              </div>
+            )}
+
+            {/* Game Not Started Overlay */}
+            {!isGameStarted && !isGameOver && (
+              <div className="absolute inset-0 bg-background/90 flex items-center justify-center">
+                <h3 className="font-arcade text-sm text-secondary text-center">PRESS START TO BEGIN</h3>
+              </div>
+            )}
+          </div>
+
+          {/* Controls */}
+          <div className="text-center mt-4 font-mono text-xs text-muted-foreground">
+            {isMobile ? 'Use the D-pad controls' : 'Use WASD or Arrow keys to move, SPACE to pause'}
+          </div>
+
+          {/* Mobile Controls */}
+          {isMobile && (
+            <div className="mobile-controls">
+              <div></div>
+              <button className="mobile-btn" onClick={() => handleMobileControl('UP')}>
+                ↑
+              </button>
+              <div></div>
+              <button className="mobile-btn" onClick={() => handleMobileControl('LEFT')}>
+                ←
+              </button>
+              <button className="mobile-btn" onClick={() => setIsPaused(!isPaused)}>
+                ⏸
+              </button>
+              <button className="mobile-btn" onClick={() => handleMobileControl('RIGHT')}>
+                →
+              </button>
+              <div></div>
+              <button className="mobile-btn" onClick={() => handleMobileControl('DOWN')}>
+                ↓
+              </button>
+              <div></div>
+            </div>
+          )}
+        </div>
+
+        {/* Collected Skills */}
+        <div
+          className="lg:w-80 w-full"
+          style={{ minWidth: 200, maxWidth: 320 }}
+        >
+          <div
+            className="game-ui p-4 h-full flex flex-col"
+            style={{
+              height: `calc(${GRID_SIZE * 20}px)`,
+              minHeight: 320,
+              maxHeight: `calc(${GRID_SIZE * 20}px)`,
+            }}
+          >
+            <h3 className="font-arcade text-lg text-primary mb-4 text-center">COLLECTED SKILLS</h3>
+            <div className="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {collectedSkills.length === 0 ? (
+                <div className="col-span-full text-center text-muted-foreground font-mono text-xs opacity-60">
+                  No skills collected yet.
+                </div>
+              ) : (
+                collectedSkills
+                  .filter(
+                    (skill, index, self) =>
+                      index === self.findIndex((s) => s.name === skill.name)
+                  )
+                  .map((skill, index) => (
+                    <div
+                      key={index}
+                      className="text-center p-2 bg-arcade-screen rounded border border-border"
+                      title={skill.name}
+                    >
+                      <div className="text-lg">{skill.icon}</div>
+                      <div className="font-mono text-xs text-muted-foreground truncate">
+                        {skill.name}
+                      </div>
+                    </div>
+                  ))
+              )}
+            </div>
+          </div>
+        </div>
       </div>
 
-      {/* Skill Info Panel */}
-      <div className="lg:w-80">
-        <div className="game-ui p-6">
+      {/* Skill Info Panel (spans full width) */}
+      <div className="w-full">
+        <div className="game-ui p-6 max-w-5xl mx-auto">
           <h3 className="font-arcade text-lg text-primary mb-4 text-center">SKILL INFO</h3>
-          
           {latestSkill ? (
             <div className="space-y-4">
               <div className="text-center">
@@ -385,32 +449,6 @@ const SnakeGame = ({ isMobile = false }: SnakeGameProps) => {
               <p className="font-mono text-sm text-muted-foreground">
                 Collect skills by eating the food items!
               </p>
-            </div>
-          )}
-
-          {collectedSkills.length > 0 && (
-            <div className="mt-6">
-              <h4 className="font-arcade text-sm text-primary mb-3">COLLECTED SKILLS</h4>
-              <div className="grid grid-cols-4 gap-2">
-                {collectedSkills
-  .filter(
-    (skill, index, self) =>
-      index === self.findIndex((s) => s.name === skill.name)
-  )
-  .map((skill, index) => (
-    <div 
-      key={index}
-      className="text-center p-2 bg-arcade-screen rounded border border-border"
-      title={skill.name}
-    >
-      <div className="text-lg">{skill.icon}</div>
-      <div className="font-mono text-xs text-muted-foreground truncate">
-        {skill.name}
-      </div>
-    </div>
-))}
-
-              </div>
             </div>
           )}
         </div>

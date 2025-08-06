@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
 import { useSound } from './SoundManager';
-import SpaceshipBackground from './SpaceshipBackground';
 
 interface InsertCoinScreenProps {
   onComplete: () => void;
@@ -15,20 +14,20 @@ const InsertCoinScreen = ({ onComplete }: InsertCoinScreenProps) => {
     playSound('coin-drop');
     setIsLoading(true);
     
-    // Simulate loading progress
     const interval = setInterval(() => {
       setProgress((prev) => {
         if (prev >= 100) {
           clearInterval(interval);
           setTimeout(() => {
-            onComplete();
-          }, 500);
+            onComplete(); // Delayed for blinking effect
+          }, 2000); // ← Delay for blinking "READY PLAYER ONE"
           return 100;
         }
         return prev + 2;
       });
     }, 50);
   };
+
 
   useEffect(() => {
     const handleKeyPress = (e: KeyboardEvent) => {
@@ -44,7 +43,7 @@ const InsertCoinScreen = ({ onComplete }: InsertCoinScreenProps) => {
   if (isLoading) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-background">
-        <SpaceshipBackground />
+
         
         <div className="flex flex-col items-center space-y-8">
           <h1 className="font-arcade text-2xl md:text-4xl text-primary mb-8 text-center">
@@ -60,7 +59,11 @@ const InsertCoinScreen = ({ onComplete }: InsertCoinScreenProps) => {
             <div className="w-full bg-muted rounded-full h-3 border border-border">
               <div 
                 className="loading-bar h-full rounded-full transition-all duration-100 ease-out"
-                style={{ width: `${progress}%` }}
+                style={{
+                  background: '#FFD700',
+                  animation: 'none',
+                  width: `${progress}%`
+                }}
               />
             </div>
           </div>
@@ -75,29 +78,50 @@ const InsertCoinScreen = ({ onComplete }: InsertCoinScreenProps) => {
     );
   }
 
-  // The rest of your component remains the same...
   return (
     <div className="min-h-screen flex items-center justify-center bg-background">
-      <SpaceshipBackground />
+      
       
       <div className="text-center space-y-8">
         <h1 className="font-arcade text-3xl md:text-6xl text-foreground mb-8">
-           [AAYUSH SHRESTHA]
+           AAYUSH SHRESTHA
         </h1>
         
         <h2 className="font-arcade text-lg md:text-2xl text-secondary mb-12">
-          FULL STACK DEVELOPER
+          SOFTWARE ENGINEER/DEVELOPER 
         </h2>
         
-        <button
-          onClick={handleInsertCoin}
-          className="insert-coin font-arcade text-xl md:text-3xl text-primary cursor-pointer 
-                     bg-transparent border-none hover:scale-105 transition-transform duration-300
-                     focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 
-                     focus:ring-offset-background"
-        >
-          INSERT COIN
-        </button>
+        <div className="flex items-center justify-center space-x-4">
+          {/* Mario Coin Animation */}
+          <span className="w-12 h-12 flex items-center justify-center">
+            <img
+              src="/mario-coin.gif"
+              alt="Mario Coin"
+              className="animate-spin-slow w-10 h-10"
+              style={{ animation: 'spin 1.2s linear infinite' }}
+            />
+          </span>
+          <button
+            onClick={handleInsertCoin}
+            className="insert-coin font-arcade text-xl md:text-3xl text-primary cursor-pointer 
+                 bg-transparent border-none hover:scale-105 transition-transform duration-300
+                 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 
+                 focus:ring-offset-background"
+          >
+            INSERT COIN
+          </button>
+        </div>
+        <style>
+          {`
+            @keyframes spin {
+              0% { transform: rotateY(0deg);}
+              100% { transform: rotateY(360deg);}
+            }
+            .animate-spin-slow {
+              animation: spin 1.2s linear infinite;
+            }
+          `}
+        </style>
         
         <p className="font-mono text-sm text-muted-foreground mt-8">
           Click or press ENTER to start
