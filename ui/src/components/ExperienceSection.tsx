@@ -16,7 +16,7 @@ const experiences = [
       'Streamed interaction data via Kafka for robust telemetry and experimental logging.',
       'Co-authored CHI’25 research paper on accessible VR, backed by user evaluations with 20 participants.'
     ],
-    technologies: ['C#', 'Unity', 'Kafka']
+    technologies: ['C#', 'Unity', 'Virtual Reality', 'Python', 'AWS', 'Kafka', 'React', 'Figma']
   },
   {
     id: 2,
@@ -32,7 +32,7 @@ const experiences = [
       'Automated Jenkins CI/CD with Docker image versioning and AWS ECR/Kubernetes integration, halving build times.',
       'Promoted TDD with JUnit, achieving 85% coverage and reducing code smells from 200+ to under 50.'
     ],
-    technologies: ['Java', 'Spring Boot', 'AWS']
+    technologies: ['Java', 'Spring Boot', 'PostgreSQL', 'AWS', 'Docker', 'Kubernetes', 'Jenkins']
   },
   {
     id: 3,
@@ -48,7 +48,7 @@ const experiences = [
       'Implemented Kubernetes Ingress-layer security integrated with Spring Security to block unauthorized controller access.',
       'Modernized TMF REST APIs by developing TMF 641 wrappers to support end-to-end order lifecycle orchestration.'
     ],
-    technologies: ['Java', 'Spring Boot', 'Kafka']
+    technologies: ['Java', 'Spring Boot', 'Junits', 'MySQL', 'Cucumber', 'React','Kafka']
   }
 ];
 
@@ -97,12 +97,12 @@ const ExperienceSection = () => {
                       <div className="flex items-center gap-2 mb-2">
                         <Briefcase size={16} className="text-primary" />
                         <h3 className="font-arcade text-lg text-primary">
-                          STAGE {experiences.length - index}: {exp.company}
+                          STAGE {experiences.length - index}: {exp.title}
                         </h3>
                       </div>
                       
-                      <h4 className="font-mono text-md text-foreground font-semibold mb-2">
-                        {exp.title}
+                      <h4 className="font-arcade text-xs text-foreground font-semibold mb-2">
+                        {exp.company}
                       </h4>
                       
                       <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
@@ -178,16 +178,7 @@ const ExperienceSection = () => {
         <div className="mt-12 bg-card p-6 rounded-lg border border-border">
           <h4 className="font-arcade text-lg text-primary mb-6 text-center">CAREER STATISTICS</h4>
           
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-            <div className="text-center">
-              <div className="text-3xl font-arcade text-secondary mb-2">
-                {experiences.length}
-              </div>
-              <div className="font-mono text-sm text-muted-foreground">
-                Stages Completed
-              </div>
-            </div>
-            
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-5">            
             <div className="text-center">
               <div className="text-3xl font-arcade text-secondary mb-2">
                 5+
@@ -199,19 +190,37 @@ const ExperienceSection = () => {
             
             <div className="text-center">
               <div className="text-3xl font-arcade text-secondary mb-2">
-                4+
+                25+
               </div>
               <div className="font-mono text-sm text-muted-foreground">
-                Projects Delivered
+                REST APIs Engineered
               </div>
             </div>
-            
+                        
             <div className="text-center">
               <div className="text-3xl font-arcade text-secondary mb-2">
-                10+
+                1384
               </div>
               <div className="font-mono text-sm text-muted-foreground">
-                Technologies Mastered
+                Coffee-Fueled Commits
+              </div>
+            </div>
+
+            <div className="text-center">
+              <div className="text-3xl font-arcade text-secondary mb-2">
+                999+
+              </div>
+              <div className="font-mono text-sm text-muted-foreground">
+                 “Works on My Machine” Incidents
+              </div>
+            </div>
+
+            <div className="text-center">
+              <div className="text-3xl font-arcade text-secondary mb-2">
+                15+
+              </div>
+              <div className="font-mono text-sm text-muted-foreground">
+                Regretful Friday Deployments
               </div>
             </div>
           </div>

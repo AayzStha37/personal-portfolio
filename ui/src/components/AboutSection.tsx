@@ -1,9 +1,8 @@
-import SpaceshipBackground from './SpaceshipBackground';
+
 
 const AboutSection = () => {
   return (
     <div className="crt-screen p-6 relative">
-      <SpaceshipBackground />
       
       <div className="relative z-10">
         <div className="text-center mb-12">

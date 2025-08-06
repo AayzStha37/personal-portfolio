@@ -83,13 +83,13 @@ const ArcadeConsole = () => {
 
   // Desktop layout
   return (
-    <div className="min-h-screen p-8 bg-background">
+    <div className="min-h-screen p-7 bg-background">
       <div className="max-w-7xl mx-auto">
         {/* Arcade Console Frame */}
         <div className="arcade-console p-8">
           {/* Screen Area */}
-          <div className="bg-arcade-screen rounded-lg p-2 mb-8 min-h-[600px]">
-            <div className="crt-screen h-full">
+          <div className="bg-arcade-screen rounded-lg p-2 mb-8 h-[950px]">
+            <div className="crt-screen h-full overflow-y-auto">
               {renderSection()}
             </div>
           </div>
