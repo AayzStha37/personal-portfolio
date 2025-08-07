@@ -139,7 +139,9 @@ export const SoundProvider = ({ children }: SoundProviderProps) => {
         'menu-confirm': { frequency: 784, duration: 0.2, type: 'triangle' },
         'item-collect': { frequency: 1047, duration: 0.15, type: 'sawtooth' },
         'game-over': { frequency: 130, duration: 1, type: 'sine' },
-        'power-up': { frequency: 1568, duration: 0.3, type: 'triangle' }
+        'power-up': { frequency: 1568, duration: 0.3, type: 'triangle' },
+        'submit-form-success': { frequency: 880, duration: 0.25, type: 'triangle' },
+        'submit-form-error': { frequency: 196, duration: 0.4, type: 'sawtooth' }
       };
       
       const profile = soundProfiles[soundName] || soundProfiles['menu-bleep'];
