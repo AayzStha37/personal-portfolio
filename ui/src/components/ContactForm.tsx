@@ -24,6 +24,7 @@ export const ContactForm = ({ onSent, onError, playSound }: ContactFormProps) =>
     e.preventDefault();
     
     if (isSending || !formData.name || !formData.email || !formData.message) {
+      console.log('Submission stopped by client-side check. A field is empty.');
       return;
     }
     
@@ -37,7 +38,7 @@ export const ContactForm = ({ onSent, onError, playSound }: ContactFormProps) =>
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(formData),
+      body: JSON.stringify({ formData }),
       });
 
       if (!response.ok) {

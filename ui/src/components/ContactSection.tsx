@@ -237,7 +237,10 @@ const ContactSection = () => {
                       ? 'bg-primary text-primary-foreground shadow-lg'
                       : 'bg-card text-primary border border-primary'
                     }`}
-                    onClick={() => setShowForm(true)}
+                    onClick={() => {
+                      setShowForm(true);
+                      playSound('power-up');
+                    }}
                     tabIndex={-1}
                   >
                     YES
