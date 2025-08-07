@@ -22,7 +22,7 @@ const ContactSection = () => {
     playSound('menu-confirm');
   };
 
-  function setShowPopup(arg0: boolean) {
+  function showSuccessPopup(arg0: boolean) {
     const popup = document.createElement('div');
     popup.innerText = 'Instructions sent!';
     popup.style.position = 'fixed';
@@ -51,6 +51,37 @@ const ContactSection = () => {
       document.body.removeChild(popup);
       }, 500);
     }, 1800);
+  }
+
+  function showErrorPopup(message: string) {
+    const popup = document.createElement('div');
+    popup.innerText = message;
+    popup.style.position = 'fixed';
+    popup.style.top = '40%';
+    popup.style.left = '50%';
+    popup.style.transform = 'translate(-50%, -50%)';
+    popup.style.background = '#18181b';
+    popup.style.color = '#ef4444'; 
+    popup.style.fontFamily = '"Press Start 2P", "Arcade", monospace';
+    popup.style.fontSize = '1.25rem';
+    popup.style.padding = '2rem 3rem';
+    popup.style.border = '3px solid #ef4444'; 
+    popup.style.borderRadius = '1rem';
+    popup.style.boxShadow = '0 8px 32px #ef444455'; 
+    popup.style.zIndex = '9999';
+    popup.style.textAlign = 'center';
+    popup.style.letterSpacing = '0.05em';
+    popup.style.textShadow = '0 2px 8px #ef444477'; 
+
+    document.body.appendChild(popup);
+
+    setTimeout(() => {
+      popup.style.transition = 'opacity 0.5s';
+      popup.style.opacity = '0';
+      setTimeout(() => {
+        document.body.removeChild(popup);
+      }, 500);
+    }, 2500); // Longer timeout for error messages
   }
 
   return (
@@ -217,7 +248,11 @@ const ContactSection = () => {
                   <ContactForm
                   onSent={() => {
                     setShowForm(false);
-                    setShowPopup(true);
+                    showSuccessPopup(true);
+                  }}
+                  onError={(message) => {
+                    setShowForm(false);
+                    showErrorPopup(message);
                   }}
                   playSound={playSound}
                   />
