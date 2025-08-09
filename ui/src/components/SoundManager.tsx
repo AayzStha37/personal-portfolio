@@ -1,5 +1,12 @@
 import { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+
+declare global {
+  interface Window {
+    webkitAudioContext: typeof AudioContext;
+  }
+}
 
 interface SoundContextType {
   isMuted: boolean;
@@ -21,15 +28,21 @@ interface SoundProviderProps {
   children: ReactNode;
 }
 
+const getAudioContext = (): AudioContext => {
+  const Ctor = window.AudioContext || window.webkitAudioContext;
+  return new Ctor();
+};
+
 export const SoundProvider = ({ children }: SoundProviderProps) => {
   const [isMuted, setIsMuted] = useState(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const musicIntervalRef = useRef<number | null>(null);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     const initializeAudio = () => {
       if (!isMuted && !audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        audioContextRef.current = getAudioContext();
         
         const playTone = (frequency: number, duration: number, startTime: number) => {
           if (!audioContextRef.current || isMuted) return;
@@ -119,7 +132,7 @@ export const SoundProvider = ({ children }: SoundProviderProps) => {
     if (isMuted) return;
 
     try {
-      const audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      const audioContext = getAudioContext();
       
       // Resume audio context if suspended
       if (audioContext.state === 'suspended') {
@@ -156,7 +169,7 @@ export const SoundProvider = ({ children }: SoundProviderProps) => {
       oscillator.stop(audioContext.currentTime + profile.duration);
       
       // Clean up
-      setTimeout(() => audioContext.close(), profile.duration * 1000 + 100);
+      window.setTimeout(() => audioContext.close(), profile.duration * 1000 + 100);
     } catch (error) {
       console.log('Sound playback failed:', error);
     }
@@ -171,11 +184,15 @@ export const SoundProvider = ({ children }: SoundProviderProps) => {
       {children}
       <button
         onClick={toggleMute}
-        className="fixed top-4 right-4 z-50 p-3 bg-arcade-console border-2 border-primary rounded-lg 
-                   text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300"
+        className={`fixed z-50 bg-arcade-console border-2 border-primary rounded-lg text-primary hover:bg-primary hover:text-primary-foreground transition-all duration-300 
+                    ${isMobile ? 'bottom-4 right-4 p-2' : 'top-4 right-4 p-3'}`}
         aria-label={isMuted ? 'Unmute' : 'Mute'}
       >
-        {isMuted ? <VolumeX size={20} /> : <Volume2 size={20} />}
+        {isMuted ? (
+          <VolumeX size={isMobile ? 16 : 20} />
+        ) : (
+          <Volume2 size={isMobile ? 16 : 20} />
+        )}
       </button>
     </SoundContext.Provider>
   );

@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
+import type React from 'react';
 import { useSound } from './SoundManager';
 
 // Skills data structure
@@ -88,6 +89,12 @@ const SnakeGame = ({ isMobile = false }: SnakeGameProps) => {
   const gameAreaRef = useRef<HTMLDivElement>(null);
   const { playSound } = useSound();
 
+  // Dynamic cell size for responsive board
+  const CELL_SIZE = isMobile ? 16 : 20;
+
+  // Touch swipe state for mobile
+  const [touchStart, setTouchStart] = useState<{ x: number; y: number } | null>(null);
+
   const generateFood = useCallback(() => {
     const newFood = {
       x: Math.floor(Math.random() * GRID_SIZE),
@@ -165,7 +172,7 @@ const SnakeGame = ({ isMobile = false }: SnakeGameProps) => {
 
       return newSnake;
     });
-  }, [direction, food, isGameOver, isPaused, currentSkill, generateFood, playSound]);
+  }, [direction, food, isGameOver, isPaused, isGameStarted, currentSkill, generateFood, playSound]);
 
   const handleKeyPress = useCallback((e: KeyboardEvent) => {
     if (isGameOver) return;
@@ -210,6 +217,32 @@ const SnakeGame = ({ isMobile = false }: SnakeGameProps) => {
     }
   };
 
+  // Touch handlers for swipe controls
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>) => {
+    const t = e.touches?.[0];
+    if (!t) return;
+    setTouchStart({ x: t.clientX, y: t.clientY });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>) => {
+    // Prevent page scroll while swiping on the game board
+    e.preventDefault();
+    if (!touchStart || isGameOver || !isGameStarted) return;
+    const t = e.touches?.[0];
+    if (!t) return;
+
+    const dx = t.clientX - touchStart.x;
+    const dy = t.clientY - touchStart.y;
+    const threshold = 30;
+
+    if (Math.abs(dx) > Math.abs(dy)) {
+      if (Math.abs(dx) > threshold) handleMobileControl(dx > 0 ? 'RIGHT' : 'LEFT');
+    } else {
+      if (Math.abs(dy) > threshold) handleMobileControl(dy > 0 ? 'DOWN' : 'UP');
+    }
+    setTouchStart(null);
+  };
+
   useEffect(() => {
     const gameInterval = setInterval(moveSnake, GAME_SPEED);
     return () => clearInterval(gameInterval);
@@ -226,72 +259,35 @@ const SnakeGame = ({ isMobile = false }: SnakeGameProps) => {
 
   const latestSkill = collectedSkills[collectedSkills.length - 1];
 
-  return (
-    <div className="flex flex-col gap-6 p-4 w-full">
-      {/* Main Game Layout */}
-      <div className="flex flex-col lg:flex-row justify-center items-stretch gap-6 w-full">
-        {/* Skill Tree */}
-        <div
-          className="lg:w-64 w-64"
-          style={{ minWidth: 200, maxWidth: 320 }}
-        >
-          <div
-            className="game-ui p-4 h-full flex flex-col"
-            style={{
-              height: `calc(${GRID_SIZE * 20}px)`,
-              minHeight: 320,
-              maxHeight: `calc(${GRID_SIZE * 20}px)`,
-            }}
-          >
-            <h3 className="font-arcade text-lg text-primary mb-4 text-center">SKILL TREE</h3>
-            <div className="space-y-2 flex-1 overflow-y-auto no-scrollbar">
-              {mySkills.map((skill, index) => (
-                <div
-                  key={index}
-                  className={`flex items-center gap-3 p-2 rounded border transition-all ${
-                    collectedSkills.some(s => s.name === skill.name)
-                      ? 'bg-primary/20 border-primary text-primary'
-                      : 'bg-card border-border text-muted-foreground'
-                  }`}
-                >
-                  <span className="text-lg">{skill.icon}</span>
-                  <span className="font-mono text-xs">{skill.name}</span>
-                </div>
-              ))}
-            </div>
+  // Mobile-first layout
+  if (isMobile) {
+    return (
+      <div className="flex flex-col gap-4 p-3 w-full">
+        {/* Header: Title + Stats + Start */}
+        <div className="text-center">
+          <h2 className="font-arcade text-xl text-primary mb-2">SKILLS GAME</h2>
+          <div className="flex justify-center gap-4 font-mono text-xs">
+            <span>Score: <span className="text-secondary">{score}</span></span>
+            <span>Skills: <span className="text-secondary">{collectedSkills.length}</span></span>
           </div>
+          {!isGameStarted && !isGameOver && (
+            <button onClick={startGame} className="arcade-button px-5 py-2 font-arcade text-sm mt-3 text-white">
+              START GAME
+            </button>
+          )}
         </div>
 
         {/* Game Board */}
-        <div
-          className="flex-1 flex flex-col items-center justify-center min-w-[320px]"
-          style={{
-            minWidth: 320,
-            maxWidth: 480,
-          }}
-        >
-          <div className="text-center mb-4">
-            <h2 className="font-arcade text-xl text-primary mb-2 text-center">SKILLS GAME</h2>
-            <div className="flex justify-center gap-4 font-mono text-sm">
-              <span>Score: <span className="text-secondary">{score}</span></span>
-              <span>Skills: <span className="text-secondary">{collectedSkills.length}</span></span>
-            </div>
-            {!isGameStarted && !isGameOver && (
-              <button
-                onClick={startGame}
-                className="arcade-button px-6 py-3 font-arcade text-sm mt-2 text-white"
-              >
-                START GAME
-              </button>
-            )}
-          </div>
-
+        <div className="flex flex-col items-center justify-center">
           <div
             ref={gameAreaRef}
             className="snake-game mx-auto relative"
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={() => setTouchStart(null)}
             style={{
-              width: `${GRID_SIZE * 20}px`,
-              height: `${GRID_SIZE * 20}px`,
+              width: `${GRID_SIZE * CELL_SIZE}px`,
+              height: `${GRID_SIZE * CELL_SIZE}px`,
               display: 'grid',
               gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
               gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`,
@@ -300,6 +296,8 @@ const SnakeGame = ({ isMobile = false }: SnakeGameProps) => {
               borderRadius: 8,
               boxShadow: '0 2px 8px 0 rgba(0,0,0,0.08)',
               position: 'relative',
+              touchAction: 'none',
+              overscrollBehavior: 'contain',
             }}
           >
             {/* Snake segments */}
@@ -354,72 +352,49 @@ const SnakeGame = ({ isMobile = false }: SnakeGameProps) => {
             )}
           </div>
 
-          {/* Controls */}
-          <div className="text-center mt-4 font-mono text-xs text-muted-foreground">
-            {isMobile ? 'Use the D-pad controls' : 'Use WASD or Arrow keys to move, SPACE to pause'}
+          {/* Controls hint */}
+          <div className="text-center mt-3 font-mono text-xs text-muted-foreground">
+            Swipe to move
           </div>
-
-          {/* Mobile Controls */}
-          {isMobile && (
-            <div className="mobile-controls">
-              <div></div>
-              <button className="mobile-btn" onClick={() => handleMobileControl('UP')}>
-                ↑
-              </button>
-              <div></div>
-              <button className="mobile-btn" onClick={() => handleMobileControl('LEFT')}>
-                ←
-              </button>
-              <button className="mobile-btn" onClick={() => setIsPaused(!isPaused)}>
-                ⏸
-              </button>
-              <button className="mobile-btn" onClick={() => handleMobileControl('RIGHT')}>
-                →
-              </button>
-              <div></div>
-              <button className="mobile-btn" onClick={() => handleMobileControl('DOWN')}>
-                ↓
-              </button>
-              <div></div>
-            </div>
-          )}
         </div>
 
-        {/* Collected Skills */}
-        <div
-          className="lg:w-80 w-full"
-          style={{ minWidth: 200, maxWidth: 320 }}
-        >
-          <div
-            className="game-ui p-4 h-full flex flex-col"
-            style={{
-              height: `calc(${GRID_SIZE * 20}px)`,
-              minHeight: 320,
-              maxHeight: `calc(${GRID_SIZE * 20}px)`,
-            }}
-          >
-            <h3 className="font-arcade text-lg text-primary mb-4 text-center">COLLECTED SKILLS</h3>
-            <div className="flex-1 overflow-y-auto grid grid-cols-2 sm:grid-cols-3 gap-2">
+        {/* Below: Skill Info and Collected Skills side-by-side */}
+        <div className="grid grid-cols-2 gap-3">
+          {/* Skill Info */}
+          <div className="game-ui p-3">
+            <h3 className="font-arcade text-base text-primary mb-2 text-center">SKILL INFO</h3>
+            {latestSkill ? (
+              <div className="space-y-2 text-center">
+                <div className="text-3xl">{latestSkill.icon}</div>
+                <h4 className="font-arcade text-sm text-secondary">{latestSkill.name}</h4>
+                <p className="font-mono text-xs text-foreground leading-relaxed">
+                  {latestSkill.description}
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-2 text-center">
+                <div className="text-3xl">{currentSkill.icon}</div>
+                <h4 className="font-arcade text-sm text-secondary">{currentSkill.name}</h4>
+                <p className="font-mono text-xs text-muted-foreground">Collect skills by eating the food items!</p>
+              </div>
+            )}
+          </div>
+
+          {/* Collected Skills */}
+          <div className="game-ui p-3">
+            <h3 className="font-arcade text-base text-primary mb-2 text-center">COLLECTED</h3>
+            <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto no-scrollbar">
               {collectedSkills.length === 0 ? (
                 <div className="col-span-full text-center text-muted-foreground font-mono text-xs opacity-60">
-                  No skills collected yet.
+                  None yet.
                 </div>
               ) : (
                 collectedSkills
-                  .filter(
-                    (skill, index, self) =>
-                      index === self.findIndex((s) => s.name === skill.name)
-                  )
+                  .filter((skill, idx, self) => idx === self.findIndex((s) => s.name === skill.name))
                   .map((skill, index) => (
-                    <div
-                      key={index}
-                      className="text-center p-2 bg-arcade-screen rounded border border-border"
-                      title={skill.name}
-                    >
+                    <div key={index} className="text-center p-2 bg-arcade-screen rounded border border-border" title={skill.name}>
                       <div className="text-lg">{skill.icon}</div>
-                      <div className="font-mono text-xs text-muted-foreground truncate">
-                        {skill.name}
-                      </div>
+                      <div className="font-mono text-[10px] text-muted-foreground truncate">{skill.name}</div>
                     </div>
                   ))
               )}
@@ -427,30 +402,169 @@ const SnakeGame = ({ isMobile = false }: SnakeGameProps) => {
           </div>
         </div>
       </div>
+    );
+  }
 
-      {/* Skill Info Panel (spans full width) */}
-      <div className="w-full">
-        <div className="game-ui p-6 max-w-5xl mx-auto">
-          <h3 className="font-arcade text-lg text-primary mb-4 text-center">SKILL INFO</h3>
-          {latestSkill ? (
-            <div className="space-y-4">
-              <div className="text-center">
-                <div className="text-4xl mb-2">{latestSkill.icon}</div>
-                <h4 className="font-arcade text-md text-secondary">{latestSkill.name}</h4>
+  // Desktop / larger screens layout 
+  return (
+    <div className="p-4 w-full">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_360px]">
+        {/* Header spanning both columns */}
+        <div className="lg:col-span-2 flex flex-col items-center">
+          <div className="text-center">
+            <h2 className="font-arcade text-xl text-primary mb-2 text-center">SKILLS GAME</h2>
+            <div className="flex justify-center gap-4 font-mono text-sm">
+              <span>Score: <span className="text-secondary">{score}</span></span>
+              <span>Skills: <span className="text-secondary">{collectedSkills.length}</span></span>
+            </div>
+            {!isGameStarted && !isGameOver && (
+              <button onClick={startGame} className="arcade-button px-6 py-3 font-arcade text-sm mt-2 text-white">START GAME</button>
+            )}
+          </div>
+        </div>
+
+        {/* Game Board */}
+        <div className="flex justify-center">
+          <div
+            ref={gameAreaRef}
+            className="snake-game mx-auto relative"
+            style={{
+              width: `${GRID_SIZE * CELL_SIZE}px`,
+              height: `${GRID_SIZE * CELL_SIZE}px`,
+              display: 'grid',
+              gridTemplateColumns: `repeat(${GRID_SIZE}, 1fr)`,
+              gridTemplateRows: `repeat(${GRID_SIZE}, 1fr)`,
+              gap: '1px',
+              background: 'var(--card)',
+              borderRadius: 8,
+              boxShadow: '0 2px 8px 0 rgba(0,0,0,0.08)',
+              position: 'relative'
+            }}
+          >
+            {/* Snake segments */}
+            {snake.map((segment, index) => (
+              <div
+                key={index}
+                className="snake-segment"
+                style={{
+                  gridColumn: segment.x + 1,
+                  gridRow: segment.y + 1,
+                  backgroundColor: index === 0 ? 'hsl(var(--primary))' : 'hsl(var(--secondary))'
+                }}
+              />
+            ))}
+
+            {/* Food */}
+            <div
+              className="snake-food flex items-center justify-center text-lg"
+              style={{
+                gridColumn: food.x + 1,
+                gridRow: food.y + 1
+              }}
+            >
+              {currentSkill.icon}
+            </div>
+
+            {/* Game Over Overlay */}
+            {isGameOver && (
+              <div className="absolute inset-0 bg-background/90 flex flex-col items-center justify-center">
+                <h3 className="font-arcade text-2xl text-primary mb-4 text-center">GAME OVER</h3>
+                <button
+                  onClick={resetGame}
+                  className="arcade-button px-6 py-3 font-arcade text-sm text-white"
+                >
+                  PLAY AGAIN
+                </button>
               </div>
-              <p className="font-mono text-sm text-foreground leading-relaxed">
-                {latestSkill.description}
-              </p>
+            )}
+
+            {/* Pause Overlay */}
+            {isPaused && !isGameOver && isGameStarted && (
+              <div className="absolute inset-0 bg-background/90 flex items-center justify-center">
+                <h3 className="font-arcade text-xl text-secondary text-center">PAUSED</h3>
+              </div>
+            )}
+
+            {/* Game Not Started Overlay */}
+            {!isGameStarted && !isGameOver && (
+              <div className="absolute inset-0 bg-background/90 flex items-center justify-center">
+                <h3 className="font-arcade text-sm text-secondary text-center">PRESS START TO BEGIN</h3>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Skill Tree*/}
+        <aside className="hidden lg:block">
+          <div className="game-ui p-4 h-full" style={{ height: `${GRID_SIZE * CELL_SIZE}px` }}>
+            <div className="flex h-full flex-col">
+              <h3 className="font-arcade text-lg text-primary mb-4 text-center">SKILL TREE</h3>
+              <div className="flex-1 min-h-0 overflow-y-auto no-scrollbar space-y-2">
+                {mySkills.map((skill, index) => (
+                  <div
+                    key={index}
+                    className={`flex items-center gap-3 p-2 rounded border transition-all ${
+                      collectedSkills.some(s => s.name === skill.name)
+                        ? 'bg-primary/20 border-primary text-primary'
+                        : 'bg-card border-border text-muted-foreground'
+                    }`}
+                  >
+                    <span className="text-lg">{skill.icon}</span>
+                    <span className="font-mono text-xs">{skill.name}</span>
+                  </div>
+                ))}
+              </div>
             </div>
-          ) : (
-            <div className="text-center space-y-4">
-              <div className="text-4xl mb-2">{currentSkill.icon}</div>
-              <h4 className="font-arcade text-md text-secondary">{currentSkill.name}</h4>
-              <p className="font-mono text-sm text-muted-foreground">
-                Collect skills by eating the food items!
-              </p>
+          </div>
+        </aside>
+
+        <div className="lg:col-span-2 text-center font-mono text-xs text-muted-foreground">Use WASD or Arrow keys to move, SPACE to pause</div>
+s
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+          {/* Skill Info panel */}
+          <div className="game-ui p-6 h-full">
+            <h3 className="font-arcade text-lg text-primary mb-4 text-center">SKILL INFO</h3>
+            {latestSkill ? (
+              <div className="space-y-4">
+                <div className="text-center">
+                  <div className="text-4xl mb-2">{latestSkill.icon}</div>
+                  <h4 className="font-arcade text-md text-secondary">{latestSkill.name}</h4>
+                </div>
+                <p className="font-mono text-sm text-foreground leading-relaxed">
+                  {latestSkill.description}
+                </p>
+              </div>
+            ) : (
+              <div className="text-center space-y-4">
+                <div className="text-4xl mb-2">{currentSkill.icon}</div>
+                <h4 className="font-arcade text-md text-secondary">{currentSkill.name}</h4>
+                <p className="font-mono text-sm text-muted-foreground">
+                  Collect skills by eating the food items!
+                </p>
+              </div>
+            )}
+          </div>
+
+          {/* Collected Skills panel */}
+          <div className="game-ui p-6 h-full">
+            <h3 className="font-arcade text-lg text-primary mb-4 text-center">COLLECTED SKILLS</h3>
+            <div className="grid grid-cols-3 gap-3 max-h-80 overflow-y-auto no-scrollbar">
+              {collectedSkills.length === 0 ? (
+                <div className="col-span-full text-center text-muted-foreground font-mono text-sm opacity-60">
+                  No skills collected yet.
+                </div>
+              ) : (
+                collectedSkills
+                  .filter((skill, index, self) => index === self.findIndex((s) => s.name === skill.name))
+                  .map((skill, index) => (
+                    <div key={index} className="text-center p-3 bg-arcade-screen rounded border border-border" title={skill.name}>
+                      <div className="text-xl">{skill.icon}</div>
+                      <div className="font-mono text-xs text-muted-foreground truncate">{skill.name}</div>
+                    </div>
+                  ))
+              )}
             </div>
-          )}
+          </div>
         </div>
       </div>
     </div>
