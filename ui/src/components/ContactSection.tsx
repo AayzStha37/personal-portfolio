@@ -29,9 +29,9 @@ const ContactSection = () => {
   // Arcade-themed toasts
   const showSuccessToast = () => {
     toast({
-      title: 'Instructions sent! ✅',
-      duration: 1800,
-      className: 'border-2 border-yellow-400 bg-background/95 text-yellow-400 font-arcade text-xs sm:text-sm shadow-[0_8px_32px_rgba(163,230,53,0.33)]',
+      title: 'Instructions sent!',
+      duration: 2500,
+      className: 'border-2 border-green-500 bg-green-600 text-white font-arcade text-xs sm:text-sm shadow-[0_8px_32px_rgba(34,197,94,0.33)]',
     });
   };
 
