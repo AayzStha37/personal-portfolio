@@ -460,6 +460,12 @@
   .nav-item.active::before {
     opacity: 1;
     left: -15px;
+    animation: blink 1s steps(2, start) infinite;
+  }
+
+  @keyframes blink {
+    0%, 49% { opacity: 1; }
+    50%, 100% { opacity: 0; }
   }
 
   /* Hide scrollbar but keep scroll functionality */
@@ -469,6 +475,12 @@
   .no-scrollbar {
     -ms-overflow-style: none;  /* IE & Edge */
     scrollbar-width: none;     /* Firefox */
+  }
+
+  .custom-scrollbar {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--accent) / 0.25) hsl(var(--background) / 0.25);
+    -ms-overflow-style: none;
   }
 
 }

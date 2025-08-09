@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface ContactFormProps {
   onSent: () => void;
@@ -14,6 +15,8 @@ export const ContactForm = ({ onSent, onError, playSound }: ContactFormProps) =>
   });
   
   const [isSending, setIsSending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const isMobile = useIsMobile();
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -29,6 +32,7 @@ export const ContactForm = ({ onSent, onError, playSound }: ContactFormProps) =>
     }
     
     setIsSending(true);
+    setError(null);
 
     const workerUrl = 'https://portfolio-email-sender.saayush97.workers.dev';
 
@@ -66,6 +70,73 @@ export const ContactForm = ({ onSent, onError, playSound }: ContactFormProps) =>
     }
   };
 
+  if (isMobile) {
+    return (
+      <form onSubmit={handleSubmit} className="animate-fade-in px-3 py-3 space-y-3">
+        {error && (
+          <div className="rounded-md border border-destructive/30 bg-destructive/10 text-destructive font-mono text-xs p-2">
+            {error}
+          </div>
+        )}
+
+        <div className="space-y-1.5">
+          <label htmlFor="name" className="block font-mono text-[10px] tracking-wide text-foreground">NAME</label>
+          <input
+            type="text"
+            id="name"
+            name="name"
+            value={formData.name}
+            onChange={handleChange}
+            required
+            placeholder="Your name"
+            autoComplete="name"
+            autoCapitalize="words"
+            className="w-full h-11 px-3 font-mono text-xs bg-arcade-screen/60 border border-border rounded-md focus:border-primary focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground/70"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="email" className="block font-mono text-[10px] tracking-wide text-foreground">EMAIL</label>
+          <input
+            type="email"
+            id="email"
+            name="email"
+            value={formData.email}
+            onChange={handleChange}
+            required
+            placeholder="you@example.com"
+            autoComplete="email"
+            inputMode="email"
+            className="w-full h-11 px-3 font-mono text-xs bg-arcade-screen/60 border border-border rounded-md focus:border-primary focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground/70"
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <label htmlFor="message" className="block font-mono text-[10px] tracking-wide text-foreground">MESSAGE</label>
+          <textarea
+            id="message"
+            name="message"
+            rows={5}
+            value={formData.message}
+            onChange={handleChange}
+            required
+            placeholder="Write your message..."
+            className="w-full px-3 py-2 font-mono text-xs bg-arcade-screen/60 border border-border rounded-md focus:border-primary focus:ring-2 focus:ring-primary/40 placeholder:text-muted-foreground/70"
+          />
+        </div>
+
+        <button
+          type="submit"
+          disabled={isSending}
+          className="w-full font-arcade text-xs px-3 py-2 rounded-md transition-colors duration-200 bg-primary text-primary-foreground shadow-md hover:bg-primary/90 disabled:opacity-70 disabled:cursor-not-allowed"
+        >
+          {isSending ? 'SENDING...' : 'SEND'}
+        </button>
+      </form>
+    );
+  }
+
+  // Desktop view
   return (
     <form onSubmit={handleSubmit} className="space-y-4 text-left animate-fade-in">
       <div>
@@ -104,11 +175,15 @@ export const ContactForm = ({ onSent, onError, playSound }: ContactFormProps) =>
           className="w-full p-2 font-mono bg-background border border-border rounded focus:border-primary focus:outline-none"
         />
       </div>
+      {error && (
+        <p className="font-mono text-sm text-destructive">{error}</p>
+      )}
       <button
         type="submit"
-        className="w-full font-arcade text-lg px-6 py-2 rounded transition-colors duration-200 bg-primary text-primary-foreground shadow-lg hover:bg-primary/90"
+        className="w-full font-arcade text-lg px-6 py-2 rounded transition-colors duration-200 bg-primary text-primary-foreground shadow-lg hover:bg-primary/90 disabled:opacity-70 disabled:cursor-not-allowed"
+        disabled={isSending}
       >
-        SEND INSTRUCTIONS
+        {isSending ? 'SENDING...' : 'SEND INSTRUCTIONS'}
       </button>
     </form>
   );
