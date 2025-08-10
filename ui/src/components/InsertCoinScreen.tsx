@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useSound } from './SoundManager';
+import { useIsMobile } from '../hooks/use-mobile';
 
 interface InsertCoinScreenProps {
   onComplete: () => void;
@@ -9,8 +10,9 @@ const InsertCoinScreen = ({ onComplete }: InsertCoinScreenProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [progress, setProgress] = useState(0);
   const { playSound } = useSound();
+  const isMobile = useIsMobile();
 
-  const handleInsertCoin = () => {
+  const handleInsertCoin = useCallback(() => {
     playSound('coin-drop');
     setIsLoading(true);
     
@@ -26,7 +28,7 @@ const InsertCoinScreen = ({ onComplete }: InsertCoinScreenProps) => {
         return prev + 2;
       });
     }, 50);
-  };
+  }, [onComplete, playSound]);
 
 
   useEffect(() => {
@@ -38,25 +40,25 @@ const InsertCoinScreen = ({ onComplete }: InsertCoinScreenProps) => {
 
     document.addEventListener('keydown', handleKeyPress);
     return () => document.removeEventListener('keydown', handleKeyPress);
-  }, [isLoading]);
+  }, [isLoading, handleInsertCoin]);
 
   if (isLoading) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background">
+      <div className="min-h-[100svh] flex flex-col items-center justify-center bg-background p-4">
 
         
         <div className="flex flex-col items-center space-y-8">
-          <h1 className="font-arcade text-2xl md:text-4xl text-primary mb-8 text-center">
+          <h1 className="font-arcade text-2xl md:text-4xl text-primary mb-6 md:mb-8 text-center">
             LOADING PORTFOLIO
           </h1>
           
-          <div className="w-80 bg-arcade-console border-2 border-primary rounded-lg p-4">
+          <div className={`bg-arcade-console border-2 border-primary rounded-lg p-4 ${isMobile ? 'w-full max-w-xs' : 'w-80'}`}>
             <div className="flex justify-between items-center mb-2">
               <span className="font-arcade text-xs text-foreground">PROGRESS</span>
               <span className="font-arcade text-xs text-primary">{progress}%</span>
             </div>
             
-            <div className="w-full bg-muted rounded-full h-3 border border-border">
+            <div className="w-full bg-muted rounded-full h-2 md:h-3 border border-border">
               <div 
                 className="loading-bar h-full rounded-full transition-all duration-100 ease-out"
                 style={{
@@ -69,7 +71,7 @@ const InsertCoinScreen = ({ onComplete }: InsertCoinScreenProps) => {
           </div>
           
           {progress === 100 && (
-            <div className="font-arcade text-lg text-secondary animate-pulse">
+            <div className="font-arcade text-base md:text-lg text-secondary animate-pulse">
               READY PLAYER ONE
             </div>
           )}
@@ -79,21 +81,21 @@ const InsertCoinScreen = ({ onComplete }: InsertCoinScreenProps) => {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
+    <div className="min-h-[100svh] flex items-center justify-center bg-background p-4">
       
       
       <div className="text-center space-y-8">
-        <h1 className="font-arcade text-3xl md:text-6xl text-foreground mb-8">
+        <h1 className="font-arcade text-3xl md:text-6xl text-foreground mb-6 md:mb-8">
            AAYUSH SHRESTHA
         </h1>
         
-        <h2 className="font-arcade text-lg md:text-2xl text-secondary mb-12">
+        <h2 className="font-arcade text-base md:text-2xl text-secondary mb-8 md:mb-12">
           SOFTWARE ENGINEER/DEVELOPER 
         </h2>
         
         <div className="flex items-center justify-center space-x-4">
           {/* Mario Coin Animation */}
-          <span className="w-12 h-12 flex items-center justify-center">
+          <span className="w-10 h-10 md:w-12 md:h-12 flex items-center justify-center">
             <img
               src="/mario-coin.gif"
               alt="Mario Coin"
@@ -103,7 +105,7 @@ const InsertCoinScreen = ({ onComplete }: InsertCoinScreenProps) => {
           </span>
           <button
             onClick={handleInsertCoin}
-            className="insert-coin font-arcade text-xl md:text-3xl text-primary cursor-pointer 
+            className="insert-coin font-arcade text-lg md:text-3xl text-primary cursor-pointer 
                  bg-transparent border-none hover:scale-105 transition-transform duration-300
                  focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 
                  focus:ring-offset-background"
@@ -123,7 +125,7 @@ const InsertCoinScreen = ({ onComplete }: InsertCoinScreenProps) => {
           `}
         </style>
         
-        <p className="font-mono text-sm text-muted-foreground mt-8">
+  <p className="font-mono text-xs md:text-sm text-muted-foreground mt-6 md:mt-8">
           Click or press ENTER to start
         </p>
       </div>
