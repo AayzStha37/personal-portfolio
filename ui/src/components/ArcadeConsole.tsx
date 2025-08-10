@@ -13,6 +13,7 @@ const ArcadeConsole = () => {
   const [activeSection, setActiveSection] = useState<Section>('about');
   const { playSound } = useSound();
   const isMobile = useIsMobile();
+  const [mountedSections, setMountedSections] = useState<Set<Section>>(new Set(['about']));
 
   // Refs for auto-centering the active nav item
   const scrollContainerRef = useRef<HTMLDivElement>(null);
@@ -24,7 +25,7 @@ const ArcadeConsole = () => {
     contact: null,
   });
 
-  const centerMenuItem = (sectionId: Section) => {
+  const centerMenuItem = (sectionId: Section, behavior: ScrollBehavior = 'smooth') => {
     const container = scrollContainerRef.current;
     const btn = buttonRefs.current[sectionId];
     if (!container || !btn) return;
@@ -38,7 +39,7 @@ const ArcadeConsole = () => {
       const maxScrollLeft = Math.max(0, container.scrollWidth - container.clientWidth);
       const clampedTargetLeft = Math.min(Math.max(0, rawTargetLeft), maxScrollLeft);
 
-      container.scrollTo({ left: clampedTargetLeft, behavior: 'smooth' });
+      container.scrollTo({ left: clampedTargetLeft, behavior });
     });
   };
 
@@ -71,6 +72,23 @@ const ArcadeConsole = () => {
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, [activeSection]);
+
+  // Center the default landing item (PLAYER PROFILE) on first render of the mobile layout
+  useEffect(() => {
+    if (!isMobile) return;
+    centerMenuItem(activeSection, 'auto');
+  }, [isMobile, activeSection]);
+
+  // Keep non-game sections mounted in mobile to avoid flicker; mount when first visited
+  useEffect(() => {
+    if (!isMobile) return;
+    setMountedSections((prev) => {
+      if (prev.has(activeSection)) return prev;
+      const next = new Set(prev);
+      next.add(activeSection);
+      return next;
+    });
+  }, [isMobile, activeSection]);
 
   const renderSection = () => {
     switch (activeSection) {
@@ -129,7 +147,30 @@ const ArcadeConsole = () => {
 
         {/* Mobile Content */}
         <main className="flex-1">
-          {renderSection()}
+          {/* Keep non-game sections mounted to reduce flicker; game mounts only when active */}
+          <div className={activeSection === 'game' ? '' : 'hidden'} aria-hidden={activeSection !== 'game'}>
+            {activeSection === 'game' && <SnakeGame isMobile={isMobile} />}
+          </div>
+          {(mountedSections.has('projects') || activeSection === 'projects') && (
+            <div className={activeSection === 'projects' ? '' : 'hidden'} aria-hidden={activeSection !== 'projects'}>
+              <ProjectsSection />
+            </div>
+          )}
+          {(mountedSections.has('about') || activeSection === 'about') && (
+            <div className={activeSection === 'about' ? '' : 'hidden'} aria-hidden={activeSection !== 'about'}>
+              <AboutSection />
+            </div>
+          )}
+          {(mountedSections.has('experience') || activeSection === 'experience') && (
+            <div className={activeSection === 'experience' ? '' : 'hidden'} aria-hidden={activeSection !== 'experience'}>
+              <ExperienceSection />
+            </div>
+          )}
+          {(mountedSections.has('contact') || activeSection === 'contact') && (
+            <div className={activeSection === 'contact' ? '' : 'hidden'} aria-hidden={activeSection !== 'contact'}>
+              <ContactSection />
+            </div>
+          )}
         </main>
 
         {/* Aesthetic separator */}
