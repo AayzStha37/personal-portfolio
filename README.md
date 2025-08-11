@@ -1,144 +1,181 @@
-# Dynamic Professional Portfolio (Full-Stack & Cloud-Native)
+# Retro Arcade Portfolio
 
-This project is a comprehensive, full-stack, cloud-native portfolio application designed to showcase not only software development skills but also modern DevOps and Infrastructure as Code (IaC) practices. Unlike a traditional static HTML/CSS portfolio, this application is built with a scalable Java/Spring Boot backend, a dynamic React frontend, and is deployed entirely on Kubernetes using declarative manifests.
+![React](https://img.shields.io/badge/React-19-blue?logo=react)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.8-blue?logo=typescript)
+![Java](https://img.shields.io/badge/Java-17-orange?logo=openjdk)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot-green?logo=spring)
 
-The entire lifecycle of the application, from testing to containerization to deployment artifact publishing, is fully automated via GitHub Actions.
+🌐 **Live Site:** [**aayush-shrestha.info.np**](https://aayush-shrestha.info.np/)
+
+<img alt="Retro Arcade Portfolio Screenshot" src="https://github.com/user-attachments/assets/ad17c27d-65f2-465b-9a6d-ba18feb6c1e6" />
+
+A playful, retro arcade–inspired personal portfolio. It is my take on how software can feel—bright, interactive, and fun—while still being robust and maintainable!
+
+The UI presents the portfolio like a game console: a Player Profile, Character Stats reimagined as Achievements, and a Special Abilities scroller that showcases the tech stack. There are small game-like touches throughout (background chiptune tones, bleep/bloop SFX, and subtle motion) designed to evoke classic arcade vibes without getting in the way of content.
 
 ## Table of Contents
-- [Project Overview](#project-overview)
-- [Live Architecture](#live-architecture)
-- [Core Features](#core-features)
-- [Technology Stack](#technology-stack)
-- [Local Development & Deployment](#local-development--deployment)
-  - [Prerequisites](#prerequisites)
-  - [One-Command Setup](#one-command-setup)
-- [Testing Strategy](#testing-strategy)
-- [CI/CD GitOps Pipeline](#cicd-gitops-pipeline)
-  - [Workflow 1: Continuous Integration](#workflow-1-continuous-integration)
-  - [Workflow 2: Continuous Delivery (Artifact Publishing)](#workflow-2-continuous-delivery-artifact-publishing)
-- [Future Improvements](#future-improvements)
-- [Contact](#contact)
-- [License](#license)
 
-## Project Overview
+- [Why an Arcade Theme?](#why-an-arcade-theme)
+- [Tech Stack](#tech-stack)
+- [Local Development](#local-development)
+  - [Option 1: Run with the Pre-built Docker Image (Easiest)](#option-1-run-with-the-pre-built-docker-image-easiest)
+  - [Option 2: Build and Run with Docker Compose](#option-2-build-and-run-with-docker-compose-recommended)
+  - [Option 3: Run Services Manually](#option-3-run-services-manually)
+- [CI/CD & Hosting](#cicd--hosting)
+- [Issues & Enhancements](#issues--enhancements)
+- [Roadmap (Side Quests)](#roadmap-side-quests)
+- [Credits and Inspiration](#credits-and-inspiration)
 
-The primary goal of this project is to serve as a real-world example of a modern software development lifecycle. It includes:
-- A **Java backend** serving project data via a REST API.
-- A **React frontend** that dynamically fetches and renders data from the API.
-- **Containerization** of both services using multi-stage Dockerfiles for optimized and secure images.
-- **Orchestration** using Kubernetes to manage the application, database, and networking declaratively.
-- **Automation** via GitHub Actions to enforce code quality, run tests, and publish versioned Docker images to the GitHub Container Registry (GHCR).
+## Why an Arcade Theme?
 
-## Live Architecture
+-   I enjoy the intersection of tech, design, and gaming. This is an experiment to explore that overlap.
+-   Game-like metaphors make tech narratives approachable—skills become abilities, projects become levels, and milestones become achievements.
+-   The UI is intentionally tactile and legible, emphasizing clarity and delight over heavy visuals.
 
-The entire stack runs on Kubernetes, with traffic managed by an Nginx Ingress Controller. The declarative nature of the deployment means the entire architecture described below can be stood up from nothing with a single command.
+## Tech Stack
 
-```mermaid
-graph TD
-    subgraph User's Machine
-        A[Browser]
-    end
+-   **Frontend**
+    -   React 19, Vite 7, TypeScript 5.8
+    -   Lucide-react for crisp, lightweight icons
+    -   CSS with utility-like classes and custom variables for the arcade look
+    -   Web Audio API for chiptune-style tones and effects
+-   **Backend**
+    -   Java + Spring Boot (API module prepared for future data-driven features)
+-   **CI/CD & Hosting**
+    -   GitHub Actions for Continuous Integration
+    -   Cloudflare Pages for Continuous Deployment
 
-    A -- HTTP Request to localhost --> B{Kubernetes Ingress};
+## Local Development
 
-    subgraph "Kubernetes Cluster (Docker Desktop)"
-        B -- path: / --> C[UI Service];
-        B -- path: /api --> D[API Service];
-        B -- Manages --> E[UI Deployment Pod];
-        B -- Manages --> F[API Deployment Pod];
-        B -- Manages --> G[Database Pod];
+There are three ways to run the project locally. Choose the one that best fits your needs.
 
-        C --> E[React UI Pod];
-        D --> F[Spring Boot API Pod];
-        F -- JDBC --> H[Database Service];
-        H --> G[PostgreSQL Pod];
-    end
+<!-- TODO: Replace [OWNER/REPO] and [YOUR_GITHUB_USERNAME] in the commands below. -->
+
+### Option 1: Run with the Pre-built Docker Image (Easiest)
+
+A new Docker image is automatically built and published to the GitHub Container Registry after every merge to the `main` branch. This is the quickest way to get the application running.
+
+**Prerequisites:**
+-   Docker Desktop or Docker Engine installed and running.
+
+**Steps:**
+
+1.  **Log in to GitHub Container Registry (GHCR)**
+    You will need a [Personal Access Token (PAT)](https://github.com/settings/tokens) with the `read:packages` scope.
+
+    ```sh
+    # Replace YOUR_GITHUB_USERNAME with your GitHub username
+    docker login ghcr.io -u YOUR_GITHUB_USERNAME
+    ```
+    When prompted for a password, paste your PAT.
+
+2.  **Pull and Run the Image**
+    ```sh
+    # Pull the latest image
+    docker pull ghcr.io/[OWNER/REPO]:latest
+
+    # Run the container. This maps the UI to port 3000 and the API to port 8080.
+    docker run -p 3000:3000 -p 8080:8080 ghcr.io/[OWNER/REPO]:latest
+    ```
+
+3.  **Access the Application**
+    Open your browser and navigate to `http://localhost:3000`.
+
+---
+
+### Option 2: Build and Run with Docker Compose (Recommended)
+
+This approach uses the `docker-compose.yml` file in the repository to build and run the services from the source code. It's ideal for developers who will be making changes to the code.
+
+**Prerequisites:**
+-   Git
+-   Docker and Docker Compose (included with Docker Desktop).
+
+**Steps:**
+
+1.  **Clone the Repository**
+    ```sh
+    git clone https://github.com/[OWNER/REPO].git
+    cd [REPO]
+    ```
+
+2.  **Build and Start the Services**
+    ```sh
+    docker compose up --build
+    ```
+    The application will be available at `http://localhost:3000`. Hot-reloading is enabled for the UI.
+
+3.  **To Stop the Services**
+    Press `Ctrl+C` in the terminal, then run: `docker compose down`
+
+---
+
+### Option 3: Run Services Manually
+
+This method is useful if you want to work on a single service and need direct control over the development server.
+
+**Prerequisites:**
+-   Node.js 18+ (LTS recommended) and npm
+-   Java 17+ (for the API)
+
+**Instructions:**
+You will need to run the API and the UI in two separate terminal windows.
+
+**1. Run the Backend (API):**
+```sh
+cd api
+
+# On macOS/Linux
+./mvnw spring-boot:run
+
+# On Windows
+./mvnw.cmd spring-boot:run
 ```
+The API will start on http://localhost:8080.
 
-## Core Features
-- **Dynamic Project Display:** Project data is fetched from the backend API, not hardcoded in the frontend.
-- **Declarative Deployment:** The entire application stack (including the Ingress Controller and secrets) is defined as code using Kubernetes manifests and Kustomize.
-- **Automated Container Builds:** Every change merged to the `main` branch triggers a CI/CD pipeline that builds and publishes fresh, production-ready Docker images.
-- **Zero-Downtime Principles:** The use of Kubernetes Deployments allows for rolling updates and self-healing.
-- **Scalable Architecture:** Built on a microservices-style foundation that can be easily expanded.
+2. Run the Frontend (UI):
+```sh
+cd ui
 
-## Technology Stack
+# Install dependencies
+npm install
 
-### Backend
-- ☕ **Java 17** & **Spring Boot 3**: For building a robust, enterprise-grade REST API.
-- **Spring Data JPA**: For data persistence and repository management.
-- **Maven**: For dependency management and build lifecycle.
-- **Lombok**: To reduce boilerplate code.
-
-### Frontend
-- ⚛️ **React** & **Vite**: For a fast, modern, and interactive single-page application (SPA).
-- **TypeScript**: For type safety and improved developer experience.
-- **Axios**: For making API requests to the backend.
-- **CSS**: For styling.
-
-### Database
-- 🐘 **PostgreSQL**: A powerful, open-source object-relational database system.
-
-### DevOps & Infrastructure
-- 🐳 **Docker**: For containerizing the frontend and backend applications into portable images.
-- ☸️ **Kubernetes (k8s)**: For container orchestration, managing deployments, services, secrets, and networking.
-- **Kustomize**: For declarative, template-free management of Kubernetes manifests.
-- **Nginx Ingress Controller**: As the cluster's reverse proxy and entry point.
-- 🚀 **GitHub Actions**: For complete CI/CD automation.
-- **GitHub Container Registry (GHCR)**: For storing the published Docker images.
-
-## Local Development & Deployment
-
-### Prerequisites
-- **Docker Desktop** with Kubernetes enabled.
-- **Java JDK 17+**
-- **Node.js v18+**
-- **kubectl** (comes with Docker Desktop)
-
-### One-Command Setup
-Thanks to the declarative nature of Kustomize, the entire application stack—including the Nginx Ingress Controller, the database secret, and all application services—can be deployed with a single command from the project root.
-
-```bash
-# This command will:
-# 1. Fetch the official Nginx Ingress Controller manifest.
-# 2. Generate the PostgreSQL secret declaratively.
-# 3. Apply all the application manifests (API, UI, Database).
-kubectl apply -k k8s/
+# Start the development server
+npm run dev
 ```
-After a few minutes for images to pull and pods to start, the application will be available at `http://localhost`.
+---
+The UI development server will start on `http://localhost:3000`.
 
-## Testing Strategy
+## CI/CD & Hosting
 
-- **Backend Unit & Integration Testing:** The project is configured with **JUnit 5** and **Mockito** for unit testing services and controllers. Integration tests using `@SpringBootTest` are also in place to test the full Spring application context, ensuring all layers work together correctly. Tests can be run via `mvn clean install` in the `api/` directory.
+This project uses GitHub Actions for CI and Cloudflare Pages for automatic deployment.
 
-- **CI Validation:** The CI pipeline runs `mvn clean install` on every pull request, acting as a quality gate to prevent broken code from being integrated into the `develop` branch.
+-   **GitHub Actions (CI):** Runs on every push and pull request to validate the codebase (install, lint, type-check, and build). Merges to the `main` branch produce artifacts ready for deployment.
 
-## CI/CD GitOps Pipeline
+-   **Cloudflare Pages (CD):** The GitHub repository is connected to Cloudflare. On updates to the `main` branch, Cloudflare automatically kicks off a new build and deploys the latest version of the site. The frontend is hosted as static assets for speed, reliability, and low maintenance.
 
-A professional GitFlow branching strategy (`develop` -> `main`) is used to separate integration from production releases. This is enforced by two distinct GitHub Actions workflows.
+-   **Backend (API):** The API module remains in the repo for future upgrades (dynamic content, authenticated endpoints). A CI/CD pipeline can be enabled when dynamic features go live.
 
-### Workflow 1: Continuous Integration (`build-and-test.yml`)
-- **Trigger:** Runs on every push or pull request to the `develop` branch.
-- **Purpose:** To act as a quality gate.
-- **Actions:**
-  1. Checks out the code.
-  2. Sets up Java and Node.js environments.
-  3. Runs `mvn clean install` on the backend to compile code and run all tests.
-  4. Runs `npm run build` on the frontend to ensure it builds successfully.
+## Issues & Enhancements
 
-### Workflow 2: Continuous Delivery (Artifact Publishing) (`build-and-push.yml`)
-- **Trigger:** Runs **only** when a pull request is successfully merged into the `main` branch.
-- **Purpose:** To create and publish the final, deployable release artifacts.
-- **Actions:**
-  1. Checks out the production-ready code from `main`.
-  2. Logs in to the GitHub Container Registry.
-  3. Builds the `portfolio-api` Docker image.
-  4. Builds the `portfolio-ui` Docker image.
-  5. Pushes both images with a `:latest` tag to GHCR, making them available for deployment.
+All issues, feature enhancements, and other details are maintained in Notion.
 
-## Future Improvements
-- **Implement a Blog Engine:** Extend the backend to include a `BlogPost` entity and corresponding API endpoints.
-- **Add Authentication:** Secure the API using Spring Security and JWT.
-- **Introduce Monitoring:** Integrate Prometheus and Grafana for observability into the Kubernetes cluster.
-- **Convert to Helm:** Package the entire application stack into a configurable Helm chart for even easier deployment.
+-   **[View Project Board on Notion](https://blushing-crocodile-5b5.notion.site/24865be3d86080639944db6a9416f0c9?v=24865be3d86081b0a9dd000ce078d94a)**
 
+## Roadmap (Side Quests)
+
+-   **Side Quest Page:** A living journal of blog posts, research papers, and other side-hustles.
+-   **Playable Interactions:** Add small, playable microgames.
+-   **Dynamic Content:** Surface achievements, timelines, or project metadata from the API.
+-   **Deeper Arcade Theming:** Unlockable Easter eggs (Konami code?).
+-   **Testing:** Add unit, component, and visual regression tests for key UI flows.
+
+## Credits and Inspiration
+
+-   **Boilerplate:** The initial UI was generated with [lovable.dev](https://lovable.dev/).
+-   **Visual Language:** Inspired by classic arcade cabinets, CRT UI hints, and playful microinteractions.
+-   **Open-Source Libraries:** React, Vite, TypeScript, and lucide-react.
+
+---
+
+If you have ideas to push the arcade experience further—or want to team up on a side quest—reach out. **Insert coin to continue…** 🎮
