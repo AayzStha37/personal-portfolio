@@ -1,3 +1,4 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createContext, useContext, useState, useEffect, ReactNode, useRef } from 'react';
 import { Volume2, VolumeX } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -32,6 +33,9 @@ const getAudioContext = (): AudioContext => {
   const Ctor = window.AudioContext || window.webkitAudioContext;
   return new Ctor();
 };
+
+// Global volume scaling (60% of original) 
+const VOLUME_SCALE = 0.6;
 
 export const SoundProvider = ({ children }: SoundProviderProps) => {
   const [isMuted, setIsMuted] = useState(false);
@@ -162,8 +166,9 @@ export const SoundProvider = ({ children }: SoundProviderProps) => {
       oscillator.frequency.setValueAtTime(profile.frequency, audioContext.currentTime);
       oscillator.type = profile.type;
       
-      gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + profile.duration);
+  
+      gainNode.gain.setValueAtTime(0.15 * VOLUME_SCALE, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01 * VOLUME_SCALE, audioContext.currentTime + profile.duration);
       
       oscillator.start(audioContext.currentTime);
       oscillator.stop(audioContext.currentTime + profile.duration);

@@ -79,6 +79,16 @@ const ArcadeConsole = () => {
     centerMenuItem(activeSection, 'auto');
   }, [isMobile, activeSection]);
 
+  // Mobile: always start each section at the top when switching
+  useEffect(() => {
+    if (!isMobile) return;
+    requestAnimationFrame(() => {
+      window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
+      document.documentElement.scrollTop = 0;
+      document.body.scrollTop = 0;
+    });
+  }, [isMobile, activeSection]);
+
   // Keep non-game sections mounted in mobile to avoid flicker; mount when first visited
   useEffect(() => {
     if (!isMobile) return;

@@ -234,14 +234,14 @@ const SnakeGame = ({ isMobile = false }: SnakeGameProps) => {
   // Check wall collision (against playable board bounds)
   if (head.x < 0 || head.x >= PLAY_COLS || head.y < 0 || head.y >= PLAY_ROWS) {
         setIsGameOver(true);
-        playSound('game-over');
+        playSound('submit-form-error');
         return prevSnake;
       }
 
       // Check self collision
       if (newSnake.some(segment => segment.x === head.x && segment.y === head.y)) {
         setIsGameOver(true);
-        playSound('game-over');
+        playSound('submit-form-error');
         return prevSnake;
       }
 
@@ -528,7 +528,7 @@ const SnakeGame = ({ isMobile = false }: SnakeGameProps) => {
           {/* Collected Skills */}
           <div className="game-ui p-3">
             <h3 className="font-arcade text-base text-primary mb-2 text-center">COLLECTED</h3>
-            <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto no-scrollbar">
+            <div className="grid grid-cols-2 gap-2 max-h-56 overflow-y-auto pr-1">
               {collectedSkills.length === 0 ? (
                 <div className="col-span-full text-center text-muted-foreground font-mono text-xs opacity-60">
                   None yet.
@@ -537,7 +537,11 @@ const SnakeGame = ({ isMobile = false }: SnakeGameProps) => {
                 collectedSkills
                   .filter((skill, idx, self) => idx === self.findIndex((s) => s.name === skill.name))
                   .map((skill, index) => (
-                    <div key={index} className="text-center p-2 bg-arcade-screen rounded border border-border" title={skill.name}>
+                    <div
+                      key={index}
+                      className="h-16 flex flex-col items-center justify-center text-center p-2 bg-arcade-screen rounded-md border border-border"
+                      title={skill.name}
+                    >
                       <div className="text-lg">{skill.icon}</div>
                       <div className="font-mono text-[10px] text-muted-foreground truncate">{skill.name}</div>
                     </div>
