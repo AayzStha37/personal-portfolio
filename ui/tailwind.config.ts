@@ -114,6 +114,5 @@ export default {
 				'blink': 'blink-dots 2s ease-in-out infinite'
 			}
 		}
-	},
-	plugins: [require("tailwindcss-animate")],
+	}
 } satisfies Config;
